@@ -9,7 +9,7 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.clock import Clock
-from kivy.core.audio import SoundLoader
+
 
 import serial
 
@@ -18,6 +18,10 @@ import time
 import thread
 from Queue import Queue
 
+
+from audio_piano import SoundPiano
+
+sound = SoundPiano()
 
 
 def serial_thread(queue):
