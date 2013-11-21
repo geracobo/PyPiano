@@ -86,7 +86,9 @@ class RootWidget(FloatLayout):
         self.textin.text = ''
         self.textout.text = ''
 
-        sound.play()
+        sound.playKey(1)
+        sound.playKey(2)
+        sound.playKey(3)
 
     def on_clock(self, dt):
         try:
