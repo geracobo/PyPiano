@@ -1,7 +1,8 @@
 from kivy.core.audio import SoundLoader
 
 
-class PianoKeys():
+class PianoSounds():
+    sounds = dict()
     def __init__(self):
         self.C4 = SoundLoader.load('keys/C4.ogg')
         self.D4 = SoundLoader.load('keys/D4.ogg')
@@ -18,4 +19,20 @@ class PianoKeys():
         self.A5 = SoundLoader.load('keys/A5.ogg')
         self.B5 = SoundLoader.load('keys/B5.ogg')
 
+        self.sounds['C4'] = self.C4
+        self.sounds['D4'] = self.D4
+        self.sounds['E4'] = self.E4
+        self.sounds['F4'] = self.F4
+        self.sounds['G4'] = self.G4
+        self.sounds['A4'] = self.A4
+        self.sounds['B4'] = self.B4
+        self.sounds['C5'] = self.C5
+        self.sounds['D5'] = self.D5
+        self.sounds['E5'] = self.E5
+        self.sounds['F5'] = self.F5
+        self.sounds['G5'] = self.G5
+        self.sounds['A5'] = self.A5
+        self.sounds['B5'] = self.B5
+    def __getitem__(self, item):
+        return self.sounds[item]
 
