@@ -95,6 +95,9 @@ class ModeSelector(Button):
     mode = FREE_MODE
     def __init__(self):
         super(ModeSelector, self).__init__()
+        self.size_hint = (None, .5)
+        self.pos_hint = {'center_x': .5, 'center_y': .5}
+        self.width = 100
         self.text = "Modo Libre"
 
     def on_press(self):
@@ -115,7 +118,9 @@ class MainMenu(BoxLayout):
     def __init__(self):
         super(MainMenu, self).__init__()
         self.size_hint = (1, None)
-        self.height = 100
+        self.height = 60
+
+        self.padding = [5, 0, 0, 0]
 
         self.add_widget(ModeSelector())
 
