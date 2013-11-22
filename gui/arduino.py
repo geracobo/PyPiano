@@ -23,9 +23,22 @@ def arduino_thread(queue_in, queue_out):
 
             data = serial.readline()
 
-            if data == "C4\n":
-                queue_out.put("C4")
-                
+            if data == "C4\n": queue_out.put("C4")
+            elif data == "D4\n": queue_out.put("D4")
+            elif data == "E4\n": queue_out.put("E4")
+            elif data == "F4\n": queue_out.put("F4")
+            elif data == "G4\n": queue_out.put("G4")
+            elif data == "A4\n": queue_out.put("A4")
+            elif data == "B4\n": queue_out.put("B4")
+            elif data == "C5\n": queue_out.put("C5")
+            elif data == "D5\n": queue_out.put("D5")
+            elif data == "E5\n": queue_out.put("E5")
+            elif data == "F5\n": queue_out.put("F5")
+            elif data == "G5\n": queue_out.put("G5")
+            elif data == "A5\n": queue_out.put("A5")
+            elif data == "B5\n": queue_out.put("B5")
+
+        # Check commands
         if not queue_in.empty():
             data_in = queue_in.get()
             if data_in == "CONNECT":
@@ -43,6 +56,39 @@ def arduino_thread(queue_in, queue_out):
                     queue_out.put("DISCONNECTED")
                 except:
                     print "Error disconnecting"
+
+            if serial == None:
+                continue
+
+            if data_in == "+C4": serial.write('+C4')
+            elif data_in == "+D4": serial.write('+D4')
+            elif data_in == "+E4": serial.write('+E4')
+            elif data_in == "+F4": serial.write('+F4')
+            elif data_in == "+G4": serial.write('+G4')
+            elif data_in == "+A4": serial.write('+A4')
+            elif data_in == "+B4": serial.write('+B4')
+            elif data_in == "+C5": serial.write('+C5')
+            elif data_in == "+D5": serial.write('+D5')
+            elif data_in == "+E5": serial.write('+E5')
+            elif data_in == "+F5": serial.write('+F5')
+            elif data_in == "+G5": serial.write('+G5')
+            elif data_in == "+A5": serial.write('+A5')
+            elif data_in == "+B5": serial.write('+B5')
+            elif data_in == "-C4": serial.write('-C4')
+            elif data_in == "-D4": serial.write('-D4')
+            elif data_in == "-E4": serial.write('-E4')
+            elif data_in == "-F4": serial.write('-F4')
+            elif data_in == "-G4": serial.write('-G4')
+            elif data_in == "-A4": serial.write('-A4')
+            elif data_in == "-B4": serial.write('-B4')
+            elif data_in == "-C5": serial.write('-C5')
+            elif data_in == "-D5": serial.write('-D5')
+            elif data_in == "-E5": serial.write('-E5')
+            elif data_in == "-F5": serial.write('-F5')
+            elif data_in == "-G5": serial.write('-G5')
+            elif data_in == "-A5": serial.write('-A5')
+            elif data_in == "-B5": serial.write('-B5')
+
 
 
 

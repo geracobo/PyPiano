@@ -39,6 +39,21 @@ class PianoKey(Button):
         self.background_normal = "gui/img/key.jpg"
         self.background_down = "gui/img/key_down.jpg"
 
+    def key_processing(self):
+        if self.root.app.record_mode:
+                self.root.logBox.add(self.key)
+                return
+
+        if len(self.root.logBox.stack.children) < 1:
+            return
+
+        if self.root.logBox.get_current_entry() == None:
+            return
+
+        if self.root.app.playing:
+            if self.key == self.root.logBox.get_current_entry().key:
+                self.root.logBox.current_selection += 1
+
     def play(self):
         """
         Gets called by the arduino.
@@ -47,8 +62,7 @@ class PianoKey(Button):
         self.background_down = "gui/img/key.jpg"
         self.background_normal = "gui/img/key_down.jpg"
 
-        if self.root.app.record_mode:
-                self.root.logBox.add(self.key)
+        self.key_processing()
         
         Clock.schedule_once(self.play_finish, .3)
 
@@ -61,8 +75,7 @@ class PianoKey(Button):
         if value == 'down':
             keys[self.key].play()
 
-            if self.root.app.record_mode:
-                self.root.logBox.add(self.key)
+            self.key_processing()
 
 
 
@@ -116,14 +129,15 @@ class PlayPauseButton(Button):
         self.text = "Reproducir"
 
     def on_press(self):
-        self.root.logBox.current_selection += 1
         if self.mode == self.PAUSE_MODE:
             self.mode = self.PLAY_MODE
             self.text = "Pausar"
+            self.root.app.playing = True
             pass
         elif self.mode == self.PLAY_MODE:
             self.mode = self.PAUSE_MODE
             self.text = "Reproducir"
+            self.root.app.playing = False
             pass
 
 class ConnectionBox(BoxLayout):
@@ -178,6 +192,7 @@ class MainMenu(BoxLayout):
         self.resetButton = Button(text = 'Reiniciar')
         self.resetButton.size_hint = (None, 1)
         self.resetButton.width = 100
+        self.resetButton.bind(on_press=self.on_reset)
 
         self.recordButton = ToggleButton(text = 'Grabar')
         self.recordButton.size_hint = (None, 1)
@@ -197,6 +212,8 @@ class MainMenu(BoxLayout):
             self.root.app.record_mode = True
         else:
             self.root.app.record_mode = False
+    def on_reset(self, instance):
+        self.root.logBox.current_selection = 1
 
 
 class LogEntry(Label):
@@ -208,6 +225,7 @@ class LogEntry(Label):
         self.width=100
         self.height=50
         self.text = text
+        self.key = text
 
     def on_touch_down(self, touch):
         if super(LogEntry, self).on_touch_down(touch):
@@ -265,6 +283,14 @@ class LogBox(ScrollView):
     def add(self, note):
         self.stack.add_widget(LogEntry(note))
 
+    def get_entry(self, at):
+        if at == 0:
+            return None
+        if at > len(self.stack.children):
+            return None
+        return self.stack.children[len(self.stack.children)-at]
+    def get_current_entry(self):
+        return self.get_entry(self.current_selection)
 
     @property
     def current_selection(self):
@@ -303,6 +329,7 @@ class RootWidget(BoxLayout):
 
 class PianoApp(App):
     record_mode = False
+    playing = False
     def __init__(self, *args, **kwargs):
         super(PianoApp, self).__init__(*args, **kwargs)
 
@@ -317,8 +344,21 @@ class PianoApp(App):
             self.root.mainMenu.connectionBox.on_connect()
         elif data_in == "DISCONNECTED":
             self.root.mainMenu.connectionBox.on_disconnect()
-        elif data_in == "C4":
-            self.root.pianoKeyboard.C4key.play()
+
+        elif data_in == "C4": self.root.pianoKeyboard.C4key.play()
+        elif data_in == "D4": self.root.pianoKeyboard.D4key.play()
+        elif data_in == "E4": self.root.pianoKeyboard.E4key.play()
+        elif data_in == "F4": self.root.pianoKeyboard.F4key.play()
+        elif data_in == "G4": self.root.pianoKeyboard.G4key.play()
+        elif data_in == "A4": self.root.pianoKeyboard.A4key.play()
+        elif data_in == "B4": self.root.pianoKeyboard.B4key.play()
+        elif data_in == "C5": self.root.pianoKeyboard.C5key.play()
+        elif data_in == "D5": self.root.pianoKeyboard.D5key.play()
+        elif data_in == "E5": self.root.pianoKeyboard.E5key.play()
+        elif data_in == "F5": self.root.pianoKeyboard.F5key.play()
+        elif data_in == "G5": self.root.pianoKeyboard.G5key.play()
+        elif data_in == "A5": self.root.pianoKeyboard.A5key.play()
+        elif data_in == "B5": self.root.pianoKeyboard.B5key.play()
 
     def build(self):
         return self.root
