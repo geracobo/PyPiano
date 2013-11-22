@@ -311,7 +311,9 @@ class LogBox(ScrollView):
         self.stack.children[len(self.stack.children)-value].color = [1,0,0,1]
 
         # We send a KEY ON signal
-        arduino.send(str.format("+{0}", self.get_current_entry().key))
+        # Only if we are on play mode
+        if self.root.app.playing:
+            arduino.send(str.format("+{0}", self.get_current_entry().key))
 
 
 
