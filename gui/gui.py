@@ -6,11 +6,17 @@ kivy.require('1.7.2')
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.stacklayout import StackLayout
+from kivy.uix.scrollview import ScrollView
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
+from kivy.uix.togglebutton import ToggleButton
 from kivy.clock import Clock
+
+from kivy.graphics.texture import Texture
+from kivy.graphics import Color, Rectangle
 
 from arduino import Arduino
 arduino = Arduino()
@@ -22,8 +28,9 @@ keys = PianoSounds()
 
 
 class PianoKey(Button):
-    def __init__(self, key):
+    def __init__(self, key, root):
         super(PianoKey, self).__init__()
+        self.root = root
 
         self.key = key
         self.text = key
@@ -32,9 +39,15 @@ class PianoKey(Button):
         self.background_down = "gui/img/key_down.jpg"
 
     def play(self):
+        """
+        Gets called by the arduino.
+        """
         self.on_state(self, 'down')
         self.background_down = "gui/img/key.jpg"
         self.background_normal = "gui/img/key_down.jpg"
+
+        if self.root.app.record_mode:
+                self.root.logBox.add(self.key)
         
         Clock.schedule_once(self.play_finish, .3)
 
@@ -47,28 +60,33 @@ class PianoKey(Button):
         if value == 'down':
             keys[self.key].play()
 
+            if self.root.app.record_mode:
+                self.root.logBox.add(self.key)
+
+
 
 class PianoKeyboard(BoxLayout):
-    def __init__(self):
+    def __init__(self, root):
         super(PianoKeyboard, self).__init__()
+        self.root = root
 
         self.orientation = 'horizontal'
         self.spacing = 1
 
-        self.C4key = PianoKey('C4')
-        self.D4key = PianoKey('D4')
-        self.E4key = PianoKey('E4')
-        self.F4key = PianoKey('F4')
-        self.G4key = PianoKey('G4')
-        self.A4key = PianoKey('A4')
-        self.B4key = PianoKey('B4')
-        self.C5key = PianoKey('C5')
-        self.D5key = PianoKey('D5')
-        self.E5key = PianoKey('E5')
-        self.F5key = PianoKey('F5')
-        self.G5key = PianoKey('G5')
-        self.A5key = PianoKey('A5')
-        self.B5key = PianoKey('B5')
+        self.C4key = PianoKey('C4', self.root)
+        self.D4key = PianoKey('D4', self.root)
+        self.E4key = PianoKey('E4', self.root)
+        self.F4key = PianoKey('F4', self.root)
+        self.G4key = PianoKey('G4', self.root)
+        self.A4key = PianoKey('A4', self.root)
+        self.B4key = PianoKey('B4', self.root)
+        self.C5key = PianoKey('C5', self.root)
+        self.D5key = PianoKey('D5', self.root)
+        self.E5key = PianoKey('E5', self.root)
+        self.F5key = PianoKey('F5', self.root)
+        self.G5key = PianoKey('G5', self.root)
+        self.A5key = PianoKey('A5', self.root)
+        self.B5key = PianoKey('B5', self.root)
 
         self.add_widget(self.C4key)
         self.add_widget(self.D4key)
@@ -91,11 +109,13 @@ class PlayPauseButton(Button):
     PAUSE_MODE = 0
     PLAY_MODE = 1
     mode = PAUSE_MODE
-    def __init__(self):
+    def __init__(self, root):
+        self.root = root
         super(PlayPauseButton, self).__init__()
         self.text = "Reproducir"
 
     def on_press(self):
+        self.root.logBox.current_selection += 1
         if self.mode == self.PAUSE_MODE:
             self.mode = self.PLAY_MODE
             self.text = "Pausar"
@@ -141,15 +161,16 @@ class ConnectionBox(BoxLayout):
 
 
 class MainMenu(BoxLayout):
-    def __init__(self):
+    def __init__(self, root):
         super(MainMenu, self).__init__()
+        self.root = root
         self.size_hint = (1, None)
         self.height = 40
 
         self.spacing = 10
         self.padding = [5, 5, 5, 5]
 
-        self.playPauseButton = PlayPauseButton()
+        self.playPauseButton = PlayPauseButton(self.root)
         self.playPauseButton.size_hint = (None, 1)
         self.playPauseButton.width = 100
 
@@ -157,9 +178,10 @@ class MainMenu(BoxLayout):
         self.resetButton.size_hint = (None, 1)
         self.resetButton.width = 100
 
-        self.recordButton = Button(text = 'Grabar')
+        self.recordButton = ToggleButton(text = 'Grabar')
         self.recordButton.size_hint = (None, 1)
         self.recordButton.width = 100
+        self.recordButton.bind(state=self.on_record)
 
         self.connectionBox = ConnectionBox()
 
@@ -169,11 +191,64 @@ class MainMenu(BoxLayout):
         self.add_widget(Widget())
         self.add_widget(self.connectionBox)
 
-class LogBox(TextInput):
-    def __init__(self):
+    def on_record(self, instance, state):
+        if state == 'down':
+            self.root.app.record_mode = True
+        else:
+            self.root.app.record_mode = False
+
+
+
+class DataItem(object):
+    def __init__(self, text='', is_selected=False):
+        self.text = text
+        self.is_selected = is_selected
+
+class LogBox(ScrollView):
+    _current_selection = 0
+
+
+    def __init__(self, root):
         super(LogBox, self).__init__()
+        self.root = root
         self.size_hint = (1, None)
         self.height = 150
+
+        self.stack = StackLayout()
+        self.stack.orientation = 'lr-tb'
+        self.stack.size_hint = (1, None)
+        self.stack.bind(minimum_height=self.stack.setter('height'))
+
+        self.add_widget(self.stack)
+
+
+
+    def add(self, note):
+        self.stack.add_widget(Label(
+            text=note,
+            size_hint=(None, None),
+            width=100,
+            height=50))
+
+
+    @property
+    def current_selection(self):
+        return self._current_selection
+    @current_selection.setter
+    def current_selection(self, value):
+        for child in self.stack.children:
+            child.color = [1,1,1,1]
+
+        if value > len(self.stack.children):
+            self._current_selection = 0
+            return
+
+        self._current_selection = value
+        self.stack.children[len(self.stack.children)-value].color = [1,0,0,1]
+
+
+
+
 
 class RootWidget(BoxLayout):
     def __init__(self, app):
@@ -182,15 +257,17 @@ class RootWidget(BoxLayout):
 
         self.orientation = "vertical"
 
-        self.mainMenu = MainMenu()
-        self.logBox = LogBox()
-        self.pianoKeyboard = PianoKeyboard()
+        self.mainMenu = MainMenu(self)
+        self.logBox = LogBox(self)
+        self.pianoKeyboard = PianoKeyboard(self)
 
         self.add_widget(self.mainMenu)
         self.add_widget(self.logBox)
         self.add_widget(self.pianoKeyboard)
 
+
 class PianoApp(App):
+    record_mode = False
     def __init__(self, *args, **kwargs):
         super(PianoApp, self).__init__(*args, **kwargs)
 
