@@ -13,6 +13,7 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.togglebutton import ToggleButton
+from kivy.uix.bubble import Bubble, BubbleButton
 from kivy.clock import Clock
 
 from kivy.graphics.texture import Texture
@@ -204,6 +205,64 @@ class DataItem(object):
         self.text = text
         self.is_selected = is_selected
 
+class DeleteBubble(Bubble):
+    def __init__(self):
+        super(DeleteBubble, self).__init__()
+        self.size_hint = (None, None)
+        self.pos_hint = {'center_x': .5, 'y': .6}
+        self.width = 100
+        self.height = 50
+        self.background_color = [.3,.5,.8,1]
+
+        self.deleteButton = BubbleButton(text="Borrar")
+        self.add_widget(self.deleteButton)
+
+
+class LogEntry(Label):
+    __events__ = ('on_press', 'on_release')
+
+    def __init__(self, text):
+        super(LogEntry, self).__init__()
+        self.size_hint=(None, None)
+        self.width=100
+        self.height=50
+        self.text = text
+
+    def on_touch_down(self, touch):
+        if super(LogEntry, self).on_touch_down(touch):
+            return True
+        if touch.is_mouse_scrolling:
+            return False
+        if not self.collide_point(touch.x, touch.y):
+            return False
+        if self in touch.ud:
+            return False
+        touch.grab(self)
+        touch.ud[self] = True
+        self.dispatch('on_press')
+        return True
+
+    def on_touch_move(self, touch):
+        if touch.grab_current is self:
+            return True
+        if super(LogEntry, self).on_touch_move(touch):
+            return True
+        return self in touch.ud
+
+    def on_touch_up(self, touch):
+        if touch.grab_current is not self:
+            return super(LogEntry, self).on_touch_up(touch)
+        assert(self in touch.ud)
+        touch.ungrab(self)
+        self.dispatch('on_release')
+        return True
+
+    def on_press(self):
+        pass
+    def on_release(self):
+        print "yea"
+        self.parent.add_widget(DeleteBubble())
+
 class LogBox(ScrollView):
     _current_selection = 0
 
@@ -224,11 +283,7 @@ class LogBox(ScrollView):
 
 
     def add(self, note):
-        self.stack.add_widget(Label(
-            text=note,
-            size_hint=(None, None),
-            width=100,
-            height=50))
+        self.stack.add_widget(LogEntry(note))
 
 
     @property
