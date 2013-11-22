@@ -60,6 +60,8 @@ def arduino_thread(queue_in, queue_out):
             if serial == None:
                 continue
 
+            print "Sending ", data_in
+
             if data_in == "+C4": serial.write('+C4')
             elif data_in == "+D4": serial.write('+D4')
             elif data_in == "+E4": serial.write('+E4')

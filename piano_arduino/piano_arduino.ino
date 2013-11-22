@@ -1,6 +1,7 @@
 
 
 int key = 7;
+int led  = 8;
 
 uint8_t lastKey = LOW;
 
@@ -10,22 +11,40 @@ void setup()
   
   pinMode(key, INPUT);
   digitalWrite(key, HIGH);
+  
+  pinMode(led, OUTPUT);
+  digitalWrite(led, LOW);
 }
 
 
 void loop()
 {
-//  if(Serial.available())
-//  {
-//    char buffer[64];
-//    int len = Serial.readBytesUntil('\n', buffer, 64);
-//    
-//    buffer[len] = '\n';
-//    buffer[len+1] = '\0';
-//    
-//    Serial.write(">");
-//    Serial.write((const unsigned char*)buffer, len+1);
-//  }
+  if(Serial.available())
+  {
+    char buffer[3];
+    int len = Serial.readBytesUntil('\n', buffer, 3);
+    
+    if(buffer[0] == '+')
+    {
+      if(buffer[1] == 'C')
+      {
+        if(buffer[2] == '4')
+        {
+          digitalWrite(led, HIGH);
+        }
+      }
+    }
+    if(buffer[0] == '-')
+    {
+      if(buffer[1] == 'C')
+      {
+        if(buffer[2] == '4')
+        {
+          digitalWrite(led, LOW);
+        }
+      }
+    }
+  }
   
   if(digitalRead(key) == LOW)
   {
