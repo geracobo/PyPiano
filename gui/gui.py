@@ -199,27 +199,8 @@ class MainMenu(BoxLayout):
             self.root.app.record_mode = False
 
 
-
-class DataItem(object):
-    def __init__(self, text='', is_selected=False):
-        self.text = text
-        self.is_selected = is_selected
-
-class DeleteBubble(Bubble):
-    def __init__(self):
-        super(DeleteBubble, self).__init__()
-        self.size_hint = (None, None)
-        self.pos_hint = {'center_x': .5, 'y': .6}
-        self.width = 100
-        self.height = 50
-        self.background_color = [.3,.5,.8,1]
-
-        self.deleteButton = BubbleButton(text="Borrar")
-        self.add_widget(self.deleteButton)
-
-
 class LogEntry(Label):
-    __events__ = ('on_press', 'on_release')
+    __events__ = ('on_double_click',)
 
     def __init__(self, text):
         super(LogEntry, self).__init__()
@@ -237,9 +218,11 @@ class LogEntry(Label):
             return False
         if self in touch.ud:
             return False
+        if not touch.is_double_tap:
+            return False
         touch.grab(self)
         touch.ud[self] = True
-        self.dispatch('on_press')
+        self.dispatch('on_double_click')
         return True
 
     def on_touch_move(self, touch):
@@ -254,14 +237,11 @@ class LogEntry(Label):
             return super(LogEntry, self).on_touch_up(touch)
         assert(self in touch.ud)
         touch.ungrab(self)
-        self.dispatch('on_release')
         return True
 
-    def on_press(self):
-        pass
-    def on_release(self):
-        print "yea"
-        self.parent.add_widget(DeleteBubble())
+    def on_double_click(self):
+        self.parent.remove_widget(self)
+
 
 class LogBox(ScrollView):
     _current_selection = 0
