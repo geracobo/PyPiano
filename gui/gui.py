@@ -54,6 +54,9 @@ class PianoKey(Button):
             if self.key == self.root.logBox.get_current_entry().key:
                 self.root.logBox.current_selection += 1
 
+                # Send a KEY OFF signal
+                arduino.send(str.format('-{0}', self.key))
+
     def play(self):
         """
         Gets called by the arduino.
@@ -306,6 +309,9 @@ class LogBox(ScrollView):
 
         self._current_selection = value
         self.stack.children[len(self.stack.children)-value].color = [1,0,0,1]
+
+        # We send a KEY ON signal
+        arduino.send(str.format("+{0}", self.get_current_entry().key))
 
 
 
