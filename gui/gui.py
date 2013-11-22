@@ -31,6 +31,18 @@ class PianoKey(Button):
         self.background_normal = "gui/img/key.jpg"
         self.background_down = "gui/img/key_down.jpg"
 
+    def play(self):
+        self.on_state(self, 'down')
+        self.background_down = "gui/img/key.jpg"
+        self.background_normal = "gui/img/key_down.jpg"
+        
+        Clock.schedule_once(self.play_finish, .3)
+
+    def play_finish(self, dt):
+        self.background_normal = "gui/img/key.jpg"
+        self.background_down = "gui/img/key_down.jpg"
+
+
     def on_state(self, instance, value):
         if value == 'down':
             keys[self.key].play()
@@ -193,6 +205,8 @@ class PianoApp(App):
             self.root.mainMenu.connectionBox.on_connect()
         elif data_in == "DISCONNECTED":
             self.root.mainMenu.connectionBox.on_disconnect()
+        elif data_in == "C4":
+            self.root.pianoKeyboard.C4key.play()
 
     def build(self):
         return self.root

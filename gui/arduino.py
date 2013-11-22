@@ -21,8 +21,10 @@ def arduino_thread(queue_in, queue_out):
                 queue_out.put("DISCONNECTED")
                 continue
 
-            data = serial.read()
-            print data
+            data = serial.readline()
+
+            if data == "C4\n":
+                queue_out.put("C4")
                 
         if not queue_in.empty():
             data_in = queue_in.get()
