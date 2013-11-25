@@ -20,6 +20,7 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.bubble import Bubble, BubbleButton
 from kivy.uix.popup import Popup
 from kivy.clock import Clock
+from kivy.core.window import Window
 
 from kivy.uix.filechooser import FileChooserListView
 
@@ -440,6 +441,10 @@ class PianoApp(App):
 
         self.root = RootWidget(self)
 
+
+        self.keyboard = Window.request_keyboard(self.on_keyboard_closed, self)
+        self.keyboard.bind(on_key_down=self.on_keyboard_down)
+
         Clock.schedule_interval(self.arduino_poll, .01)
 
     def arduino_poll(self, dt):
@@ -468,6 +473,28 @@ class PianoApp(App):
             if data_in == "B5": self.root.pianoKeyboard.B5key.play()
 
             data_in = arduino.get()
+
+
+    def on_keyboard_closed(self):
+        self.keyboard.unbind(on_key_down=self.on_keyboard_down)
+        self.keyboard = None
+    def on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        if keycode[1] == 'q': self.root.pianoKeyboard.C4key.play()
+        if keycode[1] == 'w': self.root.pianoKeyboard.D4key.play()
+        if keycode[1] == 'e': self.root.pianoKeyboard.E4key.play()
+        if keycode[1] == 'r': self.root.pianoKeyboard.F4key.play()
+        if keycode[1] == 't': self.root.pianoKeyboard.G4key.play()
+        if keycode[1] == 'y': self.root.pianoKeyboard.A4key.play()
+        if keycode[1] == 'u': self.root.pianoKeyboard.B4key.play()
+        if keycode[1] == 'a': self.root.pianoKeyboard.C5key.play()
+        if keycode[1] == 's': self.root.pianoKeyboard.D5key.play()
+        if keycode[1] == 'd': self.root.pianoKeyboard.E5key.play()
+        if keycode[1] == 'f': self.root.pianoKeyboard.F5key.play()
+        if keycode[1] == 'g': self.root.pianoKeyboard.G5key.play()
+        if keycode[1] == 'h': self.root.pianoKeyboard.A5key.play()
+        if keycode[1] == 'j': self.root.pianoKeyboard.B5key.play()
+
+        return True
 
     def build(self):
         return self.root
