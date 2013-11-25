@@ -1,5 +1,13 @@
+/*
+For PyPiano
+Using Arduino Mega
 
-typedef struct
+
+Gerardo Cobo
+*/
+
+
+typedef struct Key
 {
   char name[3];
   int key;
@@ -31,7 +39,7 @@ void setup()
   Serial.begin(9600);
   
   // For each key...
-  for (int i = 0; i <= (sizeof(keys)/sizeof(Key)); i++)
+  for (int i = 0; i < (sizeof(keys)/sizeof(Key)); i++)
   {
     pinMode(keys[i].key, INPUT);
     pinMode(keys[i].light, OUTPUT);
@@ -40,13 +48,13 @@ void setup()
 }
 
 
-Key* match_key(char name[3])
+int match_key(char name[3])
 {
-  for(int i = 0; i <= (sizeof(keys)/sizeof(Key)); i++)
+  for(int i = 0; i < (sizeof(keys)/sizeof(Key)); i++)
   {
-    if(strcmp(keys[i], name) == 0)
+    if(strcmp(keys[i].name, name) == 0)
     {
-      return keys[i];
+      return i;
     }
   }
 }
@@ -54,6 +62,7 @@ Key* match_key(char name[3])
 
 void loop()
 {
+  // Check if they are sending us something...
   if(Serial.available())
   {
     // We will only receive turning lights ON and OFF
@@ -62,35 +71,48 @@ void loop()
     int len = Serial.readBytesUntil('\n', buffer, 3);
 
     char name[3] = {buffer[1], buffer[2], '\0'};
-    Key *k = match_key(name);
+    Key* k = &keys[match_key(name)];
 
     if(k != NULL)
     {
       if(buffer[0] == '+')
       {
-        digitalWrite(k.light, HIGH);
+        digitalWrite(k->light, HIGH);
       }
       else if(buffer[0] == '-')
       {
-        digitalWrite(k.light, LOW);
+        digitalWrite(k->light, LOW);
       }
-    } 
+    }
   }
- 
-  if(digitalRead(key) == LOW)
-  {
-    if(lastKey == LOW)
-      return;
 
-    lastKey = LOW;
-    char buffer[4] = "C4\n";
-    Serial.write((const unsigned char*)buffer, 3);
-    delay(100);
-  }
-  else
+  // Check every key.
+  for(int i = 0; i < (sizeof(keys)/sizeof(Key)); i++)
   {
-    lastKey = HIGH;
+    if(digitalRead(keys[i].key) == HIGH)
+    {
+      if(keys[i].last_key == HIGH)
+        continue;
+
+      keys[i].last_key = HIGH;
+      char buffer[4] = {keys[i].name[0], keys[i].name[1], '\n', '\0'};
+      Serial.write((const unsigned char*)buffer, 4);
+
+      // The delay may be necessary, depending on the switch noise.
+      //delay(100);
+    }
+    else
+    {
+      if(keys[i].last_key == LOW)
+        continue;
+
+      keys[i].last_key = LOW;
+
+      // The delay may be necessary, depending on the switch noise.
+      //delay(100);
+    }
   }
+  //Serial.println("--------");
 }
 
 

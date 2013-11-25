@@ -61,7 +61,8 @@ class PianoKey(Button):
         """
         Gets called by the arduino.
         """
-        self.on_state(self, 'down')
+        keys[self.key].play()
+
         self.background_down = "gui/img/key.jpg"
         self.background_normal = "gui/img/key_down.jpg"
 
@@ -346,27 +347,31 @@ class PianoApp(App):
         Clock.schedule_interval(self.arduino_poll, .01)
 
     def arduino_poll(self, dt):
-        data_in = arduino.get()
+        data = arduino.get()
 
-        if data_in == "CONNECTED":
-            self.root.mainMenu.connectionBox.on_connect()
-        elif data_in == "DISCONNECTED":
-            self.root.mainMenu.connectionBox.on_disconnect()
+        for data_in in data:
+            if data_in == "CONNECTED":
+                self.root.mainMenu.connectionBox.on_connect()
+            elif data_in == "DISCONNECTED":
+                self.root.mainMenu.connectionBox.on_disconnect()
 
-        elif data_in == "C4": self.root.pianoKeyboard.C4key.play()
-        elif data_in == "D4": self.root.pianoKeyboard.D4key.play()
-        elif data_in == "E4": self.root.pianoKeyboard.E4key.play()
-        elif data_in == "F4": self.root.pianoKeyboard.F4key.play()
-        elif data_in == "G4": self.root.pianoKeyboard.G4key.play()
-        elif data_in == "A4": self.root.pianoKeyboard.A4key.play()
-        elif data_in == "B4": self.root.pianoKeyboard.B4key.play()
-        elif data_in == "C5": self.root.pianoKeyboard.C5key.play()
-        elif data_in == "D5": self.root.pianoKeyboard.D5key.play()
-        elif data_in == "E5": self.root.pianoKeyboard.E5key.play()
-        elif data_in == "F5": self.root.pianoKeyboard.F5key.play()
-        elif data_in == "G5": self.root.pianoKeyboard.G5key.play()
-        elif data_in == "A5": self.root.pianoKeyboard.A5key.play()
-        elif data_in == "B5": self.root.pianoKeyboard.B5key.play()
+
+            if data_in == "C4": self.root.pianoKeyboard.C4key.play()
+            if data_in == "D4": self.root.pianoKeyboard.D4key.play()
+            if data_in == "E4": self.root.pianoKeyboard.E4key.play()
+            if data_in == "F4": self.root.pianoKeyboard.F4key.play()
+            if data_in == "G4": self.root.pianoKeyboard.G4key.play()
+            if data_in == "A4": self.root.pianoKeyboard.A4key.play()
+            if data_in == "B4": self.root.pianoKeyboard.B4key.play()
+            if data_in == "C5": self.root.pianoKeyboard.C5key.play()
+            if data_in == "D5": self.root.pianoKeyboard.D5key.play()
+            if data_in == "E5": self.root.pianoKeyboard.E5key.play()
+            if data_in == "F5": self.root.pianoKeyboard.F5key.play()
+            if data_in == "G5": self.root.pianoKeyboard.G5key.play()
+            if data_in == "A5": self.root.pianoKeyboard.A5key.play()
+            if data_in == "B5": self.root.pianoKeyboard.B5key.play()
+
+            data_in = arduino.get()
 
     def build(self):
         return self.root

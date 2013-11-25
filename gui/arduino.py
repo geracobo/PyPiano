@@ -15,11 +15,11 @@ def arduino_thread(queue_in, queue_out):
         if serial != None:
             # Make sure an arduino is actually connected.
             try:
-                serial.getDSR()
+               serial.getDSR()
             except:
-                serial = None
-                queue_out.put("DISCONNECTED")
-                continue
+               serial = None
+               queue_out.put("DISCONNECTED")
+               continue
 
             data = serial.readline()
 
@@ -43,8 +43,8 @@ def arduino_thread(queue_in, queue_out):
             data_in = queue_in.get()
             if data_in == "CONNECT":
                 try:
-                    serial = Serial('/dev/ttyACM0', 9600)
-                    serial.setTimeout(.1)
+                    serial = Serial('/dev/ttyUSB0', 9600)
+                    serial.setTimeout(.001)
                     queue_out.put("CONNECTED")
                 except:
                     print "Error connecting"
@@ -112,10 +112,13 @@ class Arduino():
         self.queue_out.put("DISCONNECT")
 
     def get(self):
-        try:
-            return self.queue_in.get(False)
-        except:
-            return None
+        data = list()
+        while True:
+            try:
+                data.append(self.queue_in.get(False))
+            except:
+                break
+        return data
 
     def send(self, data):
         self.queue_out.put(data)
