@@ -18,7 +18,10 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.bubble import Bubble, BubbleButton
+from kivy.uix.popup import Popup
 from kivy.clock import Clock
+
+from kivy.uix.filechooser import FileChooserListView
 
 from kivy.graphics.texture import Texture
 from kivy.graphics import Color, Rectangle
@@ -58,11 +61,15 @@ class PianoKey(Button):
             return
 
         if self.root.app.playing:
-            if self.key == self.root.logBox.get_current_entry().key:
-                self.root.logBox.current_selection += 1
-
-                # Send a KEY OFF signal
+            if self.root.logBox.get_current_entry().contains_note(self.key):
+                # Send KEY OFF signal
                 arduino.send(str.format('-{0}', self.key))
+
+                # Set note to DONE
+                self.root.logBox.get_current_entry().set_note_status(self.key, True)
+
+                if self.root.logBox.get_current_entry().is_done():
+                    self.root.logBox.current_selection += 1
 
     def play(self):
         """
@@ -218,10 +225,12 @@ class MainMenu(BoxLayout):
         self.saveButton = Button(text="Guardar")
         self.saveButton.size_hint = (None, 1)
         self.saveButton.width = 80
+        self.saveButton.bind(on_press=self.on_save)
 
         self.loadButton = Button(text="Abrir")
         self.loadButton.size_hint = (None, 1)
         self.loadButton.width = 80
+        self.loadButton.bind(on_press=self.on_load)
 
 
         self.connectionBox = ConnectionBox()
@@ -232,7 +241,7 @@ class MainMenu(BoxLayout):
 
         self.add_widget(Widget(size_hint=(None, 1), width=20))
 
-        self.add_widget(self.saveButton)
+        #self.add_widget(self.saveButton)
         self.add_widget(self.loadButton)
 
         self.add_widget(Widget())
@@ -248,6 +257,40 @@ class MainMenu(BoxLayout):
         self.root.logBox.current_selection = 1
 
 
+    def on_load(self, instance):
+        self.root._popup = Popup(title='Abrir Archivo')
+        self.root._popup.size_hint = (None, None)
+        self.root._popup.width = 700
+        self.root._popup.height = 400
+        self.root._popup.content = FileChooserListView(path='/home/cobo/Programming/Piano/songs', on_submit=self.load)
+        self.root._popup.open()
+
+    def load(self, instance, selection, touch):
+        self.root._popup.dismiss()
+        sel = str(selection[0])
+        
+        tree = ET.parse(sel)
+        song = tree.getroot()
+
+        self.root.logBox.stack.clear_widgets()
+
+        for entry in song:
+            notes = list()
+            for note in entry:
+                notes.append(note.text)
+            self.root.logBox.add('|'.join(notes))
+
+
+
+    def on_save(self, instance):
+        self.root._popup = Popup(title='Guardar Archivo')
+        self.root._popup.size_hint = (None, None)
+        self.root._popup.width = 700
+        self.root._popup.height = 400
+        self.root._popup.content = FileChooserListView(path='/home/cobo/Programming/Piano/songs', on_submit=self.save)
+        self.root._popup.open()
+
+
 class LogEntry(Label):
     __events__ = ('on_double_click',)
 
@@ -257,7 +300,29 @@ class LogEntry(Label):
         self.width=100
         self.height=50
         self.text = text
-        self.key = text
+
+        self.notes = list()
+
+        notesarr = text.split('|')
+        for note in notesarr:
+            self.notes.append({'note': note, 'done': False})
+
+    def is_done(self):
+        for note in self.notes:
+            if note['done'] == False:
+                return False
+        return True
+
+    def contains_note(self, note):
+        for n in self.notes:
+            if n['note'] == note:
+                return True
+        return False
+
+    def set_note_status(self, note, done):
+        for n in self.notes:
+            if n['note'] == note:
+                n['done'] = done
 
     def on_touch_down(self, touch):
         if super(LogEntry, self).on_touch_down(touch):
@@ -339,10 +404,13 @@ class LogBox(ScrollView):
         self._current_selection = value
         self.stack.children[len(self.stack.children)-value].color = [1,0,0,1]
 
-        # We send a KEY ON signal
-        # Only if we are on play mode
+        # We send a KEY ON signal for each note
+        # only if we are on play mode.
+        # Reset done status for each note.
         if self.root.app.playing:
-            arduino.send(str.format("+{0}", self.get_current_entry().key))
+            for note in self.get_current_entry().notes:
+                note['done'] = False
+                arduino.send(str.format("+{0}", note['note']))
 
 
 
