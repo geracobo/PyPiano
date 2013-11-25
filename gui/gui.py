@@ -3,6 +3,10 @@
 import kivy
 kivy.require('1.7.2')
 
+from kivy.config import Config
+Config.set('graphics', 'width', '1000')
+Config.set('graphics', 'height', '600')
+
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.floatlayout import FloatLayout
@@ -24,6 +28,9 @@ arduino = Arduino()
 
 from audio import PianoSounds
 keys = PianoSounds()
+
+import xml.etree.ElementTree as ET
+
 
 
 
@@ -149,17 +156,21 @@ class ConnectionBox(BoxLayout):
         super(ConnectionBox, self).__init__()
 
         self.size_hint = (None, 1)
-        self.width = 400
+        self.width = 300
 
         self.statusLabel = Label()
         self.statusLabel.text = "Desconectado"
         self.statusLabel.color = [1,0,0,1]
+        self.statusLabel.size_hint = (None, 1)
+        self.statusLabel.width = 110
 
         self.statusButton = Button()
         self.statusButton.text = "Conectarse"
         self.statusButton.bind(on_press=self.status_pressed)
+        self.statusButton.size_hint = (None, 1)
+        self.statusButton.width = 110
 
-        self.add_widget(Label(text='Estatus:'))
+        self.add_widget(Label(text='Estatus:', size_hint=(None, 1), width=80))
         self.add_widget(self.statusLabel)
         self.add_widget(self.statusButton)
 
@@ -203,12 +214,29 @@ class MainMenu(BoxLayout):
         self.recordButton.width = 100
         self.recordButton.bind(state=self.on_record)
 
+
+        self.saveButton = Button(text="Guardar")
+        self.saveButton.size_hint = (None, 1)
+        self.saveButton.width = 80
+
+        self.loadButton = Button(text="Abrir")
+        self.loadButton.size_hint = (None, 1)
+        self.loadButton.width = 80
+
+
         self.connectionBox = ConnectionBox()
 
         self.add_widget(self.playPauseButton)
         self.add_widget(self.resetButton)
         self.add_widget(self.recordButton)
+
+        self.add_widget(Widget(size_hint=(None, 1), width=20))
+
+        self.add_widget(self.saveButton)
+        self.add_widget(self.loadButton)
+
         self.add_widget(Widget())
+
         self.add_widget(self.connectionBox)
 
     def on_record(self, instance, state):
