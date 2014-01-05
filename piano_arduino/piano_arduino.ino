@@ -16,6 +16,7 @@ typedef struct Key
   uint8_t last_key;
 } Key;
 
+// Key name, Key input pin, Key output light pin, Last key state
 Key keys[] = {
   {"C4", 22, 38, LOW},
   {"D4", 23, 39, LOW},
@@ -42,6 +43,7 @@ void setup()
   for (int i = 0; i < (sizeof(keys)/sizeof(Key)); i++)
   {
     pinMode(keys[i].key, INPUT);
+    digitalWrite(keys[i].key, HIGH);
     pinMode(keys[i].light, OUTPUT);
     digitalWrite(keys[i].light, LOW);
   }
@@ -89,27 +91,28 @@ void loop()
   // Check every key.
   for(int i = 0; i < (sizeof(keys)/sizeof(Key)); i++)
   {
-    if(digitalRead(keys[i].key) == HIGH)
+    Key k = keys[i];
+    if(digitalRead(k.key) == HIGH)
     {
-      if(keys[i].last_key == HIGH)
+      if(k.last_key == HIGH)
         continue;
 
       keys[i].last_key = HIGH;
-      char buffer[4] = {keys[i].name[0], keys[i].name[1], '\n', '\0'};
+      char buffer[4] = {k.name[0], k.name[1], '\n', '\0'};
       Serial.write((const unsigned char*)buffer, 4);
 
       // The delay may be necessary, depending on the switch noise.
-      //delay(100);
+      //delay(300);
     }
     else
     {
-      if(keys[i].last_key == LOW)
+      if(k.last_key == LOW)
         continue;
 
       keys[i].last_key = LOW;
 
       // The delay may be necessary, depending on the switch noise.
-      //delay(100);
+      //delay(300);
     }
   }
   //Serial.println("--------");

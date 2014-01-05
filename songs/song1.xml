@@ -1,0 +1,61 @@
+<song>
+	<entry>
+		<note>C5</note>
+	</entry>
+	<entry>
+		<note>C5</note>
+	</entry>
+	<entry>
+		<note>E5</note>
+		<note>G5</note>
+	</entry>
+	<entry>
+		<note>E5</note>
+		<note>G5</note>
+	</entry>
+
+	<entry>
+		<note>A4</note>
+	</entry>
+	<entry>
+		<note>A4</note>
+	</entry>
+	<entry>
+		<note>C5</note>
+		<note>E5</note>
+	</entry>
+	<entry>
+		<note>C5</note>
+		<note>E5</note>
+	</entry>
+
+	<entry>
+		<note>D5</note>
+	</entry>
+	<entry>
+		<note>D5</note>
+	</entry>
+	<entry>
+		<note>F5</note>
+		<note>A5</note>
+	</entry>
+	<entry>
+		<note>F5</note>
+		<note>A5</note>
+	</entry>
+
+	<entry>
+		<note>G4</note>
+	</entry>
+	<entry>
+		<note>G4</note>
+	</entry>
+	<entry>
+		<note>B4</note>
+		<note>D5</note>
+	</entry>
+	<entry>
+		<note>B4</note>
+		<note>D5</note>
+	</entry>
+</song>
